@@ -1,0 +1,101 @@
+{
+  "name": "MEDDIC DASHBOARD",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "meddic-dashboard",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "4b0d6187-4ac9-4e8f-a0f6-ca15d5000461",
+      "name": "Webhook",
+      "webhookId": "dfa74787-38bf-42ce-8440-1ecb63797838"
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "puxF6g5GW9t1JWmF",
+          "mode": "list",
+          "cachedResultName": "MEDDIC_Results",
+          "cachedResultUrl": "/projects/XymCpbYmK4rAiaos/datatables/puxF6g5GW9t1JWmF"
+        }
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        208,
+        0
+      ],
+      "id": "0f592896-e355-4514-b4e9-37a541a15fdf",
+      "name": "Get row(s)"
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        416,
+        0
+      ],
+      "id": "c1adf844-c9ae-4773-b2f1-9033559dea10",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Get row(s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s)": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "03775b77-f2b1-41e6-9561-915d75258243",
+  "meta": {
+    "instanceId": "cf02b974ce0e8e1fa72588d0f344508a0a3834637c6ff0b698646fa56fca21d7"
+  },
+  "nodeGroups": [],
+  "id": "doUDoM5Pyx17gs2C",
+  "tags": []
+}

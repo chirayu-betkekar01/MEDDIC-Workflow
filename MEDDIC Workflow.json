@@ -1,0 +1,994 @@
+{
+  "name": "MEDDIC Workflow",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -16,
+        -128
+      ],
+      "id": "6ff75e5f-a8d4-4305-9d21-0ac01f15dba9",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        656,
+        -128
+      ],
+      "id": "0d1cbf0f-d895-4d24-9465-050c241b08cd",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }} ",
+          "mode": "id"
+        },
+        "options": {
+          "fileName": "={{ $json.name }}"
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1232,
+        -112
+      ],
+      "id": "3fde0c20-eb93-48c1-88c2-12b0ccb11907",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Il0M8l4AymPKTIMn",
+          "name": "Chirayu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "destinationKey": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1.1,
+      "position": [
+        1408,
+        -112
+      ],
+      "id": "80664e46-dd97-480c-87dc-4e423b1e68c0",
+      "name": "Extract from File"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "searchMethod": "query",
+        "queryString": "='{{ $json.folder_id }}' in parents and mimeType='text/plain'",
+        "limit": "=100",
+        "filter": {},
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        864,
+        -112
+      ],
+      "id": "3481ec61-e7eb-4d50-af46-92395e1be4a9",
+      "name": "Search Files",
+      "alwaysOutputData": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Il0M8l4AymPKTIMn",
+          "name": "Chirayu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1rxt67fs9d-KEJBpnBAjXiYzgWr8x_piE",
+            "mode": "list",
+            "cachedResultName": "Transcripts",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1rxt67fs9d-KEJBpnBAjXiYzgWr8x_piE"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        192,
+        -128
+      ],
+      "id": "23ea5af7-8290-4716-a592-15ec8ec73fa3",
+      "name": "Search Clients",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "Il0M8l4AymPKTIMn",
+          "name": "Chirayu"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "746b37b4-5bec-4f01-96e4-73a15ecd31b4",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1040,
+        -112
+      ],
+      "id": "2b92e41d-d756-4f46-9eb8-9f2f0b891eba",
+      "name": "Edit Fields",
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Client: {{ $json.client_name }}\n\nTranscripts:\n{{ $json.transcript_text }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "=You are a MEDDIC extraction and scoring assistant. Analyze sales call transcripts to extract MEDDIC qualification data AND score how well the seller actively worked each field.  Return ONLY a valid JSON object with no preamble, explanation, or markdown.  SCORING RUBRIC: - 2: Seller actively asked a deliberate question to uncover or validate this field - 1: Information surfaced but seller didn't probe or validate it - 0: Field not addressed at all  Use this exact structure: {   \"meddic_score\": 0,   \"metrics\": {\"value\": \"...\", \"confidence\": \"high|partial|not_mentioned\", \"score\": 0, \"score_reason\": \"...\"},   \"economic_buyer\": {\"value\": \"...\", \"confidence\": \"high|partial|not_mentioned\", \"score\": 0, \"score_reason\": \"...\"},   \"decision_criteria\": {\"value\": \"...\", \"confidence\": \"high|partial|not_mentioned\", \"score\": 0, \"score_reason\": \"...\"},   \"decision_process\": {\"value\": \"...\", \"confidence\": \"high|partial|not_mentioned\", \"score\": 0, \"score_reason\": \"...\"},   \"identify_pain\": {\"value\": \"...\", \"confidence\": \"high|partial|not_mentioned\", \"score\": 0, \"score_reason\": \"...\"},   \"champion\": {\"value\": \"...\", \"confidence\": \"high|partial|not_mentioned\", \"score\": 0, \"score_reason\": \"...\"} }  FIELD DEFINITIONS: - metrics: Quantifiable business impact or ROI the customer mentioned - economic_buyer: Person with final budget authority and signing power - decision_criteria: What the customer needs to see to say yes - decision_process: Steps and stakeholders involved in making the decision - identify_pain: The core business problem driving the evaluation - champion: Internal advocate who wants this to succeed  SCORING RULES: - meddic_score is the sum of all 6 field scores (max 12) - score_reason must reference a specific moment in the transcript to justify the score - Be strict — a seller receiving information passively scores 1, not 2 - If a field is not_mentioned, score must be 0"
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1760,
+        -112
+      ],
+      "id": "30c1f18e-4636-4797-a1f1-6c6f8c2bb58a",
+      "name": "Basic LLM Chain"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "W2lKBX7RDCrrmvrm",
+          "mode": "list",
+          "cachedResultName": "Transcripts",
+          "cachedResultUrl": "/projects/XymCpbYmK4rAiaos/datatables/W2lKBX7RDCrrmvrm"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "client_name",
+              "keyValue": "={{ $json.name }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "client_name": "={{ $json.name }}",
+            "folder_id": "={{ $json.id }}",
+            "last_run_timestamp": "={{ new Date().toISOString() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "client_name",
+              "displayName": "client_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "folder_id",
+              "displayName": "folder_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_run_timestamp",
+              "displayName": "last_run_timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        432,
+        -128
+      ],
+      "id": "4970874d-7528-44e4-9a52-53dcc30896f0",
+      "name": "Upsert Client Records"
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "puxF6g5GW9t1JWmF",
+          "mode": "list",
+          "cachedResultName": "MEDDIC_Results",
+          "cachedResultUrl": "/projects/XymCpbYmK4rAiaos/datatables/puxF6g5GW9t1JWmF"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "client_name",
+              "keyValue": "={{ $('Loop Over Items').item.json.client_name }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "client_name": "={{ $('Loop Over Items').item.json.client_name }}",
+            "metrics_value": "={{ $json.metrics_value }}",
+            "metrics_confidence": "={{ $json.metrics_confidence }}",
+            "meddic_score": "={{ $json.meddic_score }}",
+            "metrics_score": "={{ $json.metrics_score }}",
+            "metrics_reason": "={{ $json.metrics_reason }}",
+            "economic_buyer_value": "={{ $json.economic_buyer_value }}",
+            "economic_buyer_confidence": "={{ $json.economic_buyer_confidence }}",
+            "economic_buyer_score": "={{ $json.economic_buyer_score }}",
+            "economic_buyer_reason": "={{ $json.economic_buyer_reason }}",
+            "decision_criteria_value": "={{ $json.decision_criteria_value }}",
+            "decision_criteria_confidence": "={{ $json.decision_criteria_confidence }}",
+            "decision_criteria_score": "={{ $json.decision_criteria_score }}",
+            "decision_criteria_reason": "={{ $json.decision_criteria_reason }}",
+            "decision_process_value": "={{ $json.decision_process_value }}",
+            "decision_process_confidence": "={{ $json.decision_process_confidence }}",
+            "decision_process_score": "={{ $json.decision_process_score }}",
+            "decision_process_reason": "={{ $json.decision_process_reason }}",
+            "identify_pain_value": "={{ $json.identify_pain_value }}",
+            "identify_pain_confidence": "={{ $json.identify_pain_confidence }}",
+            "identify_pain_score": "={{ $json.identify_pain_score }}",
+            "identify_pain_reason": "={{ $json.identify_pain_reason }}",
+            "champion_value": "={{ $json.champion_value }}",
+            "champion_confidence": "={{ $json.champion_confidence }}",
+            "champion_score": "={{ $json.champion_score }}",
+            "champion_reason": "={{ $json.champion_reason }}",
+            "last_run": "={{ $json.last_run }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "client_name",
+              "displayName": "client_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "metrics_value",
+              "displayName": "metrics_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "metrics_confidence",
+              "displayName": "metrics_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "meddic_score",
+              "displayName": "meddic_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "metrics_score",
+              "displayName": "metrics_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "metrics_reason",
+              "displayName": "metrics_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "economic_buyer_value",
+              "displayName": "economic_buyer_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "economic_buyer_confidence",
+              "displayName": "economic_buyer_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "economic_buyer_score",
+              "displayName": "economic_buyer_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "economic_buyer_reason",
+              "displayName": "economic_buyer_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "decision_criteria_value",
+              "displayName": "decision_criteria_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "decision_criteria_confidence",
+              "displayName": "decision_criteria_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "decision_criteria_score",
+              "displayName": "decision_criteria_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "decision_criteria_reason",
+              "displayName": "decision_criteria_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "decision_process_value",
+              "displayName": "decision_process_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "decision_process_confidence",
+              "displayName": "decision_process_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "decision_process_score",
+              "displayName": "decision_process_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "decision_process_reason",
+              "displayName": "decision_process_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "identify_pain_value",
+              "displayName": "identify_pain_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "identify_pain_confidence",
+              "displayName": "identify_pain_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "identify_pain_score",
+              "displayName": "identify_pain_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "identify_pain_reason",
+              "displayName": "identify_pain_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "champion_value",
+              "displayName": "champion_value",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "champion_confidence",
+              "displayName": "champion_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "champion_score",
+              "displayName": "champion_score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "champion_reason",
+              "displayName": "champion_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "last_run",
+              "displayName": "last_run",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2432,
+        -112
+      ],
+      "id": "87d15714-c533-4076-9e05-7d2e14a38396",
+      "name": "Upsert MEDDIC fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e802eab9-a456-4db6-9ef1-5d2aa401fd83",
+              "leftValue": "={{ $json.total }}",
+              "rightValue": 0,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1280,
+        -416
+      ],
+      "id": "f182e857-b9d3-4caa-81bc-1eca92284aee",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/companies/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"filterGroups\": [{\n    \"filters\": [{\n      \"propertyName\": \"name\",\n      \"operator\": \"EQ\",\n      \"value\": \"{{ $json.client_name }}\"\n    }]\n  }],\n  \"properties\": [\"name\", \"hs_object_id\"]\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1072,
+        -416
+      ],
+      "id": "55f25b0d-7705-42e5-8186-a764d0e8a208",
+      "name": "Search Companies"
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "=https://api.hubapi.com/crm/v3/objects/companies/{{ $json.results[0].id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"properties\": {\n    \"meddic_score\": \"{{ $('Map output to fields').item.json.meddic_score }}\",\n    \"meddic_detail\": \"MEDDIC Scorecard — {{ $('Loop Over Items').item.json.client_name }}\\nRun date: {{ $('Map output to fields').item.json.last_run }}\\nOverall score: {{ $('Map output to fields').item.json.meddic_score }}/12\\n\\n─── Metrics [{{ $('Map output to fields').item.json.metrics_confidence }}] {{ $('Map output to fields').item.json.metrics_score }}/2 ───\\n{{ $('Map output to fields').item.json.metrics_value }}\\nReason: {{ $('Map output to fields').item.json.metrics_reason }}\\n\\n─── Economic Buyer [{{ $('Map output to fields').item.json.economic_buyer_confidence }}] {{ $('Map output to fields').item.json.economic_buyer_score }}/2 ───\\n{{ $('Map output to fields').item.json.economic_buyer_value }}\\nReason: {{ $('Map output to fields').item.json.economic_buyer_reason }}\\n\\n─── Decision Criteria [{{ $('Map output to fields').item.json.decision_criteria_confidence }}] {{ $('Map output to fields').item.json.decision_criteria_score }}/2 ───\\n{{ $('Map output to fields').item.json.decision_criteria_value }}\\nReason: {{ $('Map output to fields').item.json.decision_criteria_reason }}\\n\\n─── Decision Process [{{ $('Map output to fields').item.json.decision_process_confidence }}] {{ $('Map output to fields').item.json.decision_process_score }}/2 ───\\n{{ $('Map output to fields').item.json.decision_process_value }}\\nReason: {{ $('Map output to fields').item.json.decision_process_reason }}\\n\\n─── Identify Pain [{{ $('Map output to fields').item.json.identify_pain_confidence }}] {{ $('Map output to fields').item.json.identify_pain_score }}/2 ───\\n{{ $('Map output to fields').item.json.identify_pain_value }}\\nReason: {{ $('Map output to fields').item.json.identify_pain_reason }}\\n\\n─── Champion [{{ $('Map output to fields').item.json.champion_confidence }}] {{ $('Map output to fields').item.json.champion_score }}/2 ───\\n{{ $('Map output to fields').item.json.champion_value }}\\nReason: {{ $('Map output to fields').item.json.champion_reason }}\"\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1584,
+        -512
+      ],
+      "id": "c00c76b9-32b0-4bef-bd34-c62458919436",
+      "name": "Update Companies"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst raw = $input.first().json.text;\nconst cleaned = raw.replace(/```json\\n?|\\n?```/g, '').trim();\nreturn [{ json: JSON.parse(cleaned) }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2064,
+        -112
+      ],
+      "id": "f97155fb-9512-41fe-a0bd-148771803951",
+      "name": "Parse LLM Output"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst d = $input.first().json;\n\nreturn [{\n  json: {\n    client_name: $('Loop Over Items').item.json.name,\n    meddic_score: d.meddic_score,\n    metrics_value: d.metrics.value,\n    metrics_confidence: d.metrics.confidence,\n    metrics_score: d.metrics.score,\n    metrics_reason: d.metrics.score_reason,\n    economic_buyer_value: d.economic_buyer.value,\n    economic_buyer_confidence: d.economic_buyer.confidence,\n    economic_buyer_score: d.economic_buyer.score,\n    economic_buyer_reason: d.economic_buyer.score_reason,\n    decision_criteria_value: d.decision_criteria.value,\n    decision_criteria_confidence: d.decision_criteria.confidence,\n    decision_criteria_score: d.decision_criteria.score,\n    decision_criteria_reason: d.decision_criteria.score_reason,\n    decision_process_value: d.decision_process.value,\n    decision_process_confidence: d.decision_process.confidence,\n    decision_process_score: d.decision_process.score,\n    decision_process_reason: d.decision_process.score_reason,\n    identify_pain_value: d.identify_pain.value,\n    identify_pain_confidence: d.identify_pain.confidence,\n    identify_pain_score: d.identify_pain.score,\n    identify_pain_reason: d.identify_pain.score_reason,\n    champion_value: d.champion.value,\n    champion_confidence: d.champion.confidence,\n    champion_score: d.champion.score,\n    champion_reason: d.champion.score_reason,\n    last_run: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2256,
+        -112
+      ],
+      "id": "1f5187d1-e2a1-4584-b3db-237f14848311",
+      "name": "Map output to fields"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nlet combined = '';\n\nfor (const item of items) {\n  const filename = $('Download file').item.json.name;\nconst content = item.json.text;\n  combined += `=== ${filename} ===\\n${content}\\n\\n`;\n}\n\nreturn [{\n  json: {\n    client_name: $('Loop Over Items').item.json.client_name,\n    folder_id: $('Loop Over Items').item.json.folder_id,\n    file_count: items.length,\n    transcript_text: combined\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1584,
+        -112
+      ],
+      "id": "dd260b0c-6ee9-4ed7-8840-c4cfde1f0a07",
+      "name": "Parse Text file"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nreturn $input.item;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        896,
+        -416
+      ],
+      "id": "ffd0dd19-91b5-47e7-a182-9f0cbf2daf8f",
+      "name": "Buffer"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.hubapi.com/crm/v3/objects/companies",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer "
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"properties\": {\n    \"name\": \"{{ $('Loop Over Items').item.json.client_name }}\",\n    \"meddic_score\": \"{{ $('Loop Over Items').item.json.meddic_score }}\",\n\"meddic_detail\": \"MEDDIC Scorecard — {{ $('Loop Over Items').item.json.client_name }}\\nRun date: {{ $('Map output to fields').item.json.last_run }}\\nOverall score: {{ $('Map output to fields').item.json.meddic_score }}/12\\n\\n─── Metrics [{{ $('Map output to fields').item.json.metrics_confidence }}] {{ $('Map output to fields').item.json.metrics_score }}/2 ───\\n{{ $('Map output to fields').item.json.metrics_value }}\\nReason: {{ $('Map output to fields').item.json.metrics_reason }}\\n\\n─── Economic Buyer [{{ $('Map output to fields').item.json.economic_buyer_confidence }}] {{ $('Map output to fields').item.json.economic_buyer_score }}/2 ───\\n{{ $('Map output to fields').item.json.economic_buyer_value }}\\nReason: {{ $('Map output to fields').item.json.economic_buyer_reason }}\\n\\n─── Decision Criteria [{{ $('Map output to fields').item.json.decision_criteria_confidence }}] {{ $('Map output to fields').item.json.decision_criteria_score }}/2 ───\\n{{ $('Map output to fields').item.json.decision_criteria_value }}\\nReason: {{ $('Map output to fields').item.json.decision_criteria_reason }}\\n\\n─── Decision Process [{{ $('Map output to fields').item.json.decision_process_confidence }}] {{ $('Map output to fields').item.json.decision_process_score }}/2 ───\\n{{ $('Map output to fields').item.json.decision_process_value }}\\nReason: {{ $('Map output to fields').item.json.decision_process_reason }}\\n\\n─── Identify Pain [{{ $('Map output to fields').item.json.identify_pain_confidence }}] {{ $('Map output to fields').item.json.identify_pain_score }}/2 ───\\n{{ $('Map output to fields').item.json.identify_pain_value }}\\nReason: {{ $('Map output to fields').item.json.identify_pain_reason }}\\n\\n─── Champion [{{ $('Map output to fields').item.json.champion_confidence }}] {{ $('Map output to fields').item.json.champion_score }}/2 ───\\n{{ $('Map output to fields').item.json.champion_value }}\\nReason: {{ $('Map output to fields').item.json.champion_reason }}\"\n  }\n} ",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        1584,
+        -336
+      ],
+      "id": "28f441bb-5001-4269-87c3-719884edd133",
+      "name": "Create Companies"
+    },
+    {
+      "parameters": {
+        "model": "gpt-5.4-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAzureOpenAi",
+      "typeVersion": 1,
+      "position": [
+        1760,
+        128
+      ],
+      "id": "e5be2d57-f389-48d4-8669-3dd43381133d",
+      "name": "Azure OpenAI Chat Model",
+      "credentials": {
+        "azureOpenAiApi": {
+          "id": "njMmOgKyafuRzDDV",
+          "name": "NEW Azure OpenAI gpt 5.4-mini"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Search Clients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [
+          {
+            "node": "Buffer",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Search Files",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Extract from File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract from File": {
+      "main": [
+        [
+          {
+            "node": "Parse Text file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Files": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Clients": {
+      "main": [
+        [
+          {
+            "node": "Upsert Client Records",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Basic LLM Chain": {
+      "main": [
+        [
+          {
+            "node": "Parse LLM Output",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Client Records": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert MEDDIC fields": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Update Companies",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create Companies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Companies": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LLM Output": {
+      "main": [
+        [
+          {
+            "node": "Map output to fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Companies": {
+      "main": [
+        []
+      ]
+    },
+    "Map output to fields": {
+      "main": [
+        [
+          {
+            "node": "Upsert MEDDIC fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Text file": {
+      "main": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buffer": {
+      "main": [
+        [
+          {
+            "node": "Search Companies",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Companies": {
+      "main": [
+        []
+      ]
+    },
+    "Azure OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Basic LLM Chain",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "cb06d844-d859-4726-a28c-f79ed429eafa",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "cf02b974ce0e8e1fa72588d0f344508a0a3834637c6ff0b698646fa56fca21d7"
+  },
+  "nodeGroups": [],
+  "id": "aNGkZYNJpZpaP276",
+  "tags": []
+}
