@@ -4,7 +4,7 @@ An n8n workflow that uses Claude to extract MEDDIC data from sales call transcri
 
 📹 [Full video walkthrough](https://drive.google.com/file/d/1yymJQFpajdgqF2F32QFcTpcXSzRJDn3z/view?usp=sharing)
 
-![Workflow canvas](./MEDDIC Workflow.png)
+![Workflow canvas](./screenshot.png)
 
 ## Problem
 
